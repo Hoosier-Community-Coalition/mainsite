@@ -6,7 +6,6 @@ import remarkMdx from 'remark-mdx';
 import { serialize } from 'next-mdx-remote/serialize';
 import { MDXRemote } from 'next-mdx-remote';
 import {
-  CoalitionMainHeader,
   CoalitionTitle,
   CoalitionHeader,
   CoalitionParagraph,
@@ -22,10 +21,11 @@ import {
   PageHeader,
   EventGallery,
   HCCPageComponent,
+  HCCPageContainer,
+  HCCPageTextContainer,
+  CoalitionMainHeader,
   HCCFooter
-} from '@components/core-components'; 
-import { HCCPageTextContainer } from '../../components/core-components';
-import { HCCPageContainer } from '../test';
+} from '@components/core-components'; // Adjust import path as needed
 
 
 // MDX Components mapping for HCC
@@ -215,11 +215,40 @@ const mdxComponents = {
   ),
 };
 
+// Utility function to get all articles with slug-to-filename mapping
+function getAllArticles() {
+  const contentDir = path.join(process.cwd(), 'content');
+  
+  if (!fs.existsSync(contentDir)) {
+    return [];
+  }
+  
+  const filenames = fs.readdirSync(contentDir);
+  
+  return filenames
+    .filter(filename => filename.endsWith('.md'))
+    .map(filename => {
+      const filePath = path.join(contentDir, filename);
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      const { data } = matter(fileContent);
+      
+      return {
+        filename: filename.replace(/\.md$/, ''),
+        slug: data.slug || filename.replace(/\.md$/, ''), // Use frontmatter slug or fallback to filename
+        frontMatter: data,
+        isDraft: data.draft === true
+      };
+    })
+    .filter(article => !article.isDraft); // Filter out drafts
+}
+
 // Utility function to format dates
 function formatDate(dateString) {
   if (!dateString) return null;
   
-  const date = new Date(dateString);
+  // Handle both ISO strings and Date objects
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long', 
@@ -228,9 +257,20 @@ function formatDate(dateString) {
 }
 
 export async function getStaticProps({ params }) {
-  const filePath = path.join(process.cwd(), 'content', `${params.slug}.md`);
+  // Get all articles to find the filename for this slug
+  const articles = getAllArticles();
+  const article = articles.find(a => a.slug === params.slug);
   
-  // Check if file exists
+  if (!article) {
+    return {
+      notFound: true,
+    };
+  }
+  
+  // Use the actual filename to read the file
+  const filePath = path.join(process.cwd(), 'content', `${article.filename}.md`);
+  
+  // Check if file exists (should exist since we just read it, but safety check)
   if (!fs.existsSync(filePath)) {
     return {
       notFound: true,
@@ -242,12 +282,19 @@ export async function getStaticProps({ params }) {
   // Parse YAML front matter and Markdown content
   const { data, content } = matter(fileContent);
 
-  // Check if article is draft - skip if it is
+  // Double-check draft status (should already be filtered out, but safety check)
   if (data.draft === true) {
     return {
       notFound: true,
     };
   }
+
+  // Convert Date objects to ISO strings for JSON serialization
+  const frontMatter = {
+    ...data,
+    pubDatetime: data.pubDatetime ? data.pubDatetime.toISOString() : null,
+    modDatetime: data.modDatetime ? data.modDatetime.toISOString() : null,
+  };
 
   // Serialize MDX content with our custom components
   const mdxSource = await serialize(content, {
@@ -259,42 +306,21 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      frontMatter: data,
+      frontMatter,
       mdxSource,
     },
   };
 }
 
 export async function getStaticPaths() {
-  const contentDir = path.join(process.cwd(), 'content');
-  
-  // Check if content directory exists
-  if (!fs.existsSync(contentDir)) {
-    return {
-      paths: [],
-      fallback: false,
-    };
-  }
-  
-  const filenames = fs.readdirSync(contentDir);
+  // Get all articles and generate paths based on their slugs
+  const articles = getAllArticles();
 
-  // Filter for markdown files and exclude drafts
-  const paths = filenames
-    .filter(filename => filename.endsWith('.md'))
-    .map(filename => {
-      const filePath = path.join(contentDir, filename);
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      const { data } = matter(fileContent);
-      
-      // Only include non-draft articles
-      if (data.draft !== true) {
-        return {
-          params: { slug: filename.replace(/\.md$/, '') },
-        };
-      }
-      return null;
-    })
-    .filter(Boolean); // Remove null entries
+  const paths = articles.map(article => ({
+    params: { 
+      slug: article.slug 
+    },
+  }));
 
   return {
     paths,
@@ -313,9 +339,8 @@ export default function ArticlePage({ frontMatter, mdxSource }) {
     featured = false
   } = frontMatter;
 
-  return (
-    <>
-    <HCCPageContainer>
+  return (<>
+<HCCPageContainer>
     <CoalitionMainHeader headText={"HCC Articles: " + title}/>
     <HCCPageTextContainer>
     <HCCPageComponent>
@@ -342,7 +367,7 @@ export default function ArticlePage({ frontMatter, mdxSource }) {
           )}
           {featured && (
             <CoalitionNote type="action" title="Featured Article">
-              This article has been featured by the HCC editors.
+              This article has been featured by the HCC editorial team.
             </CoalitionNote>
           )}
         </CoalitionSummary>
@@ -375,7 +400,7 @@ export default function ArticlePage({ frontMatter, mdxSource }) {
       )}
     </HCCPageComponent>
     </HCCPageTextContainer>
-    </HCCPageContainer>
+      </HCCPageContainer>
     </>
   );
 }
