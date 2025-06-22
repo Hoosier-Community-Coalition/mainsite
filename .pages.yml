@@ -1,0 +1,123 @@
+media:
+  input: public
+  output: /
+
+components:
+  contact_info:
+    label: Contact Information
+    type: object
+    fields:
+      - { name: phone, label: Phone Number, type: string }
+      - { name: email, label: Email Address, type: string, pattern: { regex: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', message: 'Must be a valid email address' } }
+      - { name: emergency, label: Emergency Contact, type: boolean }
+
+content:
+  - name: articles
+    label: Articles
+    type: collection
+    path: content
+    view:
+      fields: [ title, draft, date ]
+    fields:
+      - { name: author, label: Author, type: string }
+      - { name: pubDatetime, label: Date, type: date }
+      - { name: modDatetime, label: Date, type: date }
+      - { name: title, label: Title, type: string, required: true }
+      - { name: slug, label: Slug, type: string }
+      - { name: featured, label: Featured, type: boolean }
+      - { name: draft, label: Draft, type: boolean }
+      - { name: tags, label: Tags, type: string, list: true }
+      - { name: description, label: Description, type: string }
+      - { name: body, label: Body, type: rich-text }
+
+  - name: bills 
+    label: Bill Watch
+    type: file 
+    path: data/bills.yaml
+    fields:
+      - name: bills
+        label: Bills
+        type: object
+        list: true
+        fields:
+          - { name: id, label: Bill ID, type: string, required: true, description: "Unique identifier for the bill" }
+          - { name: title, label: Bill Title, type: string, required: true }
+          - { name: number, label: Bill Number, type: string, required: true, description: "e.g. HB 2024-001" }
+          - { name: chamber, label: Chamber, type: select, required: true, options: { choices: [House, Senate] } }
+          - { name: status, label: Status, type: select, required: true, options: { choices: [Introduced, "Committee Review", "Floor Vote Scheduled", "Passed House", "Passed Senate", "Under Review", Signed, Vetoed] } }
+          - { name: category, label: Category, type: select, required: true, options: { choices: ["Employment Rights", Education, "Criminal Justice", Healthcare, "Voting Rights", Environment, "Civil Rights", "Economic Justice"] } }
+          - { name: threat_level, label: Threat Level, type: select, required: true, options: { choices: [critical, high, medium, low] }, description: "Priority level for HCC advocacy efforts" }
+          - { name: sponsor, label: Sponsor, type: string, required: true, description: "Primary sponsor of the bill" }
+          - { name: link, label: Bill Link, type: string, description: "URL to official bill page" }
+          - { name: summary, label: Summary, type: text, required: true, description: "Brief description of the bill's purpose and provisions" }
+          - { name: negative_outcomes, label: Concerns & Opposition, type: text, description: "Potential negative impacts or opposition arguments" }
+          - { name: last_updated, label: Last Updated, type: date, required: true }
+          - { name: location, label: Current Location, type: string, required: true, description: "Current committee or floor location" }
+
+  - name: resources 
+    label: Resources 
+    type: file 
+    path: data/resources.yaml 
+    fields:
+      - name: resources
+        label: Resources
+        type: object
+        list: true
+        fields:
+          - { name: id, label: Resource ID, type: string, required: true, description: "Unique identifier for the resource" }
+          - { name: title, label: Title, type: string, required: true }
+          - { name: description, label: Description, type: text, required: true }
+          - { name: url, label: URL, type: string, description: "Link to the resource" }
+          - { name: category, label: Category, type: select, required: true, options: { choices: ["Legal Aid", "Community Organizations", "Educational Materials", "Health & Wellness", "Civic Engagement", "Educational Programs", "Advocacy Tools"] } }
+          - { name: type, label: Resource Type, type: select, required: true, options: { choices: [organization, document, service, hotline, toolkit, workshop] } }
+          - { name: featured, label: Featured Resource, type: boolean, default: false }
+          - { name: contact_info, label: Contact Information, component: contact_info }
+          - { name: schedule, label: Schedule, type: string, description: "Meeting times or availability" }
+          - { name: file_type, label: File Type, type: string, description: "e.g. PDF, DOC" }
+          - { name: languages, label: Languages Available, type: string, list: true, description: "Languages this resource is available in" }
+          - { name: tags, label: Tags, type: string, list: true, description: "Keywords for searching and categorization" }
+
+  - name: events
+    label: Events Calendar
+    type: file
+    path: data/events.yaml
+    fields:
+      - name: events
+        label: Events
+        type: object
+        list: true
+        fields:
+          - { name: id, label: Event ID, type: string, required: true, description: "Unique identifier for the event" }
+          - { name: title, label: Event Title, type: string, required: true }
+          - { name: date, label: Date, type: date, required: true }
+          - { name: time, label: Time, type: string, description: "e.g. 6:00 PM - 8:30 PM" }
+          - { name: location, label: Location, type: string, required: true }
+          - { name: address, label: Address, type: string }
+          - { name: description, label: Description, type: text, required: true }
+          - { name: category, label: Category, type: select, required: true, options: { choices: ["Community Meeting", "Civic Engagement", "Educational Workshop", "Advocacy Action", "Community Service", "Internal Meeting", "Fundraising Event", "Community Event", "Youth Program", "Volunteer Event"] } }
+          - { name: organizer, label: Organizer, type: string }
+          - { name: contact, label: Contact Information, component: contact_info }
+          - { name: registration_required, label: Registration Required, type: boolean, default: false }
+          - { name: registration_url, label: Registration URL, type: string }
+          - { name: capacity, label: Capacity, type: number, description: "Maximum number of attendees" }
+          - { name: cost, label: Cost, type: string, description: "e.g. Free, $25, Tickets start at $75" }
+          - { name: free_event, label: Free Event, type: boolean, default: false }
+          - { name: volunteer_opportunities, label: Volunteer Opportunities Available, type: boolean, default: false }
+          - { name: members_only, label: Members Only, type: boolean, default: false }
+          - { name: family_friendly, label: Family Friendly, type: boolean, default: false }
+          - { name: formal_attire, label: Formal Attire, type: boolean, default: false }
+          - { name: transportation_provided, label: Transportation Provided, type: boolean, default: false }
+          - { name: materials_provided, label: Materials Provided, type: boolean, default: false }
+          - { name: scholarships_available, label: Scholarships Available, type: boolean, default: false }
+          - { name: networking_opportunity, label: Networking Opportunity, type: boolean, default: false }
+          - { name: age_restriction, label: Age Restriction, type: string, description: "e.g. High school and college students only" }
+          - { name: tags, label: Tags, type: string, list: true }
+
+  - name: about
+    label: About page
+    type: file
+    path: src/content/about.md
+    fields:
+      - { name: layout, type: string, hidden: true, default: layouts/base.njk }
+      - { name: title, label: Title, type: string }
+      - { name: body, label: Body, type: rich-text, options: { input: public/assets, output: /assets } }

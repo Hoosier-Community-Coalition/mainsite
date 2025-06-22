@@ -1,0 +1,31 @@
+import {MdxLayout} from '@/components/mdx-layout'
+import {TextArea, CoalitionMainHeader, HCCPageComponent as HCCTextBox, CoalitionTitle} from "@components/core-components"
+
+<CoalitionMainHeader headText={"An example page!"} description={"Some example content!!"}/>
+
+<TextArea>
+# Hey hey! 
+
+> This is a blockquote!
+> They're really kinda cool..
+
+
+Hoiiii!
+
+<HCCTextBox>
+<CoalitionTitle 
+            lastUpdated="December 15, 2024" 
+            effectiveDate="January 1, 2025"
+          >
+            HCC Community Standards and Values
+          </CoalitionTitle>
+
+Here's some special page content!
+</HCCTextBox>
+
+</TextArea>
+
+
+export default function MDXPage({ children }) {
+  return <MdxLayout>{children}</MdxLayout>
+}

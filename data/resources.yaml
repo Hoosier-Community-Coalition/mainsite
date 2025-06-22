@@ -1,0 +1,22 @@
+resources:
+  - id: "aclu-indiana"
+    title: "ACLU of Indiana"
+    description: "Defending civil liberties and constitutional rights across Indiana through litigation, advocacy, and public education."
+    url: "https://www.aclu-in.org"
+    category: "Legal Aid"
+    type: "organization"
+    featured: true
+    contact_info:
+      phone: "(317) 635-4059"
+      email: "info@aclu-in.org"
+    tags: ["civil rights", "legal help", "advocacy"]
+
+  - id: "community-organizing-handbook"
+    title: "(TEST) Community Organizing Handbook"
+    description: "Step-by-step guide to grassroots organizing, coalition building, and effective advocacy strategies for social change."
+    url: "https://resources.hoosiercc.org/organizing-handbook.pdf"
+    category: "Educational Materials"
+    type: "document"
+    featured: false
+    file_type: "PDF"
+    tags: ["organizing", "advocacy", "grassroots"]
